@@ -182,7 +182,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unloaded:
         hass.data[DOMAIN].pop(entry.entry_id)
         for device_entry_data in data.get("devices").values():
-            device_entry_data["coordinator"].release()
+            await device_entry_data["coordinator"].async_release()
 
     return unloaded
 
