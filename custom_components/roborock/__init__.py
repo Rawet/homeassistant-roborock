@@ -139,7 +139,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     for device_id, device_entry_data in devices_entry_data.items():
         _coordinator = device_entry_data["coordinator"]
         if not _coordinator.last_update_success:
-            _coordinator.release()
+            await _coordinator.async_release()
             devices_entry_data[device_id] = None
         else:
             success_coordinators.append(_coordinator)
