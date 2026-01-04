@@ -20,8 +20,3 @@ coverage.xml
 config/*
 !config/configuration.yaml
 .DS_Store
-
-# macOS junk
-.DS_Store
-__MACOSX/
-._*
