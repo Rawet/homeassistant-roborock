@@ -1,0 +1,10 @@
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.roborock: debug
+    roborock: debug
+
+debugpy:
+
