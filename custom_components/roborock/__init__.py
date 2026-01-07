@@ -7,7 +7,7 @@ import logging
 from datetime import timedelta
 from pathlib import Path
 
-from roborock import RoborockException
+from roborock import RoborockException, RoborockCategory
 from roborock.web_api import RoborockApiClient
 from roborock.version_1_apis import RoborockMqttClientV1 as RoborockMqttClient
 from roborock.version_1_apis import RoborockLocalClientV1 as RoborockLocalClient
@@ -96,6 +96,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 for product in home_data.products
                 if product.id == _device.product_id
             )
+            
+            # Check if this is a washing machine (Zeo) - not supported yet
+            if product.category == RoborockCategory.WASHING_MACHINE:
+                _LOGGER.info(
+                    "Skipping washing machine device '%s' (model: %s) - Zeo devices are not yet supported in this integration. "
+                    "Device is online: %s",
+                    _device.name,
+                    product.model,
+                    _device.online,
+                )
+                continue
 
             device_info = RoborockHassDeviceInfo(
                 device=_device,
