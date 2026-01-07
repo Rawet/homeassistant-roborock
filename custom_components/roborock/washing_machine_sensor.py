@@ -48,6 +48,38 @@ WASHING_MACHINE_SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("name"),
     ),
+    WashingMachineSensorDescription(
+        key="status",
+        name="Status",
+        translation_key="washing_status",
+        device_class=SensorDeviceClass.ENUM,
+        options=["idle", "running", "paused", "error"],
+        value_fn=lambda data: data.get("status", "unknown"),
+    ),
+    WashingMachineSensorDescription(
+        key="washing_left",
+        name="Time Remaining",
+        translation_key="washing_left",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        value_fn=lambda data: data.get("washing_left"),
+    ),
+    WashingMachineSensorDescription(
+        key="countdown",
+        name="Countdown",
+        translation_key="countdown",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.get("countdown"),
+    ),
+    WashingMachineSensorDescription(
+        key="error",
+        name="Error Code",
+        translation_key="error_code",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.get("error", 0),
+    ),
 ]
 
 

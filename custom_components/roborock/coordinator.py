@@ -175,10 +175,19 @@ class RoborockWashingMachineCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update washing machine data."""
-        # For now, return basic device info
-        # In the future, we can add washing machine specific data queries
-        return {
+        data = {
             "device": self.device_info.device,
             "online": self.device_info.device.online,
             "name": self.device_info.device.name,
         }
+        
+        # Try to get status data from washing machine
+        # Based on Zeo One schema: status (203), washing_left (218), countdown (217), error (220)
+        try:
+            # Query status using MQTT - we'll implement actual commands later
+            # For now, just return basic info to avoid errors
+            pass
+        except RoborockException as ex:
+            _LOGGER.debug("Failed to get washing machine status: %s", ex)
+        
+        return data
