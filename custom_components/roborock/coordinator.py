@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -18,6 +19,7 @@ from .const import DOMAIN
 from .roborock_typing import RoborockHassDeviceInfo
 
 SCAN_INTERVAL = timedelta(seconds=30)
+WASHING_MACHINE_SCAN_INTERVAL = timedelta(seconds=60)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -132,3 +134,51 @@ class RoborockDataUpdateCoordinator(DataUpdateCoordinator[RoborockHassDeviceInfo
         except RoborockException as ex:
             raise UpdateFailed(ex) from ex
         return self.device_info
+
+
+class RoborockWashingMachineCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Coordinator for Roborock washing machines (Zeo devices)."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        client: RoborockMqttClient,
+        device_info: RoborockHassDeviceInfo,
+    ) -> None:
+        """Initialize washing machine coordinator."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_washing_machine",
+            update_interval=WASHING_MACHINE_SCAN_INTERVAL,
+        )
+        self.api = client
+        self.device_info = device_info
+        self.scheduled_refresh: asyncio.TimerHandle | None = None
+
+    def schedule_refresh(self) -> None:
+        """Schedule coordinator refresh after 1 second."""
+        if self.scheduled_refresh:
+            self.scheduled_refresh.cancel()
+        self.scheduled_refresh = self.hass.loop.call_later(
+            1, lambda: asyncio.create_task(self.async_refresh())
+        )
+
+    async def async_release(self) -> None:
+        """Disconnect from API."""
+        if self.scheduled_refresh:
+            self.scheduled_refresh.cancel()
+        try:
+            await self.api.async_disconnect()
+        except RoborockException:
+            _LOGGER.warning("Failed to disconnect from washing machine api")
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Update washing machine data."""
+        # For now, return basic device info
+        # In the future, we can add washing machine specific data queries
+        return {
+            "device": self.device_info.device,
+            "online": self.device_info.device.online,
+            "name": self.device_info.device.name,
+        }
