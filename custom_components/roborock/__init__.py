@@ -54,7 +54,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         api_client = RoborockApiClient(username, base_url)
         _LOGGER.debug("Requesting home data")
-        home_data = await api_client.get_home_data(user_data)
+        # Use v2 API to get all devices including washing machines (Zeo)
+        home_data = await api_client.get_home_data_v2(user_data)
         hass.config_entries.async_update_entry(
             entry, data={CONF_HOME_DATA: home_data.as_dict(), **data}
         )
@@ -97,16 +98,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if product.id == _device.product_id
             )
             
-            # Check if this is a washing machine (Zeo) - not supported yet
+            # Check if this is a washing machine (Zeo) - add basic support
             if product.category == RoborockCategory.WASHING_MACHINE:
                 _LOGGER.info(
-                    "Skipping washing machine device '%s' (model: %s) - Zeo devices are not yet supported in this integration. "
+                    "Found washing machine device '%s' (model: %s). Adding with basic sensor support. "
                     "Device is online: %s",
                     _device.name,
                     product.model,
                     _device.online,
                 )
-                continue
+                # For Zeo devices, we'll add them but without vacuum-specific features
+                # They will only show up as basic devices with sensors
 
             device_info = RoborockHassDeviceInfo(
                 device=_device,
